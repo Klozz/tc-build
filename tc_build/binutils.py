@@ -9,16 +9,26 @@ from tc_build.builder import Builder
 from tc_build.source import SourceManager
 import tc_build.utils
 
+def optimization_flags():
+    return {
+        'CFLAGS': '-O3 -pipe -flto -ffunction-sections -fdata-sections',
+        'CXXFLAGS': '-O3 -pipe -flto -ffunction-sections -fdata-sections',
+        'LDFLAGS': '-O3',
+    }
 
 class BinutilsBuilder(Builder):
 
     def __init__(self):
         super().__init__()
 
-        self.cflags = ['-O2']
         self.configure_flags = [
             '--disable-compressed-debug-sections',
+            '--disable-docs',
             '--disable-gdb',
+            '--disable-gdbserver',
+            '--disable-libdecnumber',
+            '--disable-readline',
+            '--disable-sim',
             '--disable-gprofng',
             '--disable-nls',
             '--disable-werror',
@@ -28,11 +38,13 @@ class BinutilsBuilder(Builder):
             '--enable-threads',
             '--quiet',
             '--with-system-zlib',
+            '--enable-default-hash-style=gnu',
         ]
 
         self.configure_vars = {
             'CC': 'gcc',
             'CXX': 'g++',
+            **optimization_flags(),
         }
         self.extra_targets = []
         self.native_arch = ''
@@ -48,9 +60,6 @@ class BinutilsBuilder(Builder):
             ]
         if self.extra_targets:
             self.configure_flags.append(f"--enable-targets={','.join(self.extra_targets)}")
-
-        self.configure_vars['CFLAGS'] = ' '.join(self.cflags)
-        self.configure_vars['CXXFLAGS'] = ' '.join(self.cflags)
 
         self.clean_build_folder()
         self.folders.build.mkdir(exist_ok=True, parents=True)
@@ -82,7 +91,6 @@ class StandardBinutilsBuilder(BinutilsBuilder):
         super().__init__()
 
         self.configure_flags += [
-            '--disable-sim',
             '--enable-lto',
             '--enable-relro',
             '--with-pic',
@@ -106,6 +114,7 @@ class ArmBinutilsBuilder(NoMultilibBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.native_arch = 'armv7l'
         self.target = 'arm-linux-gnueabi'
 
@@ -115,6 +124,7 @@ class AArch64BinutilsBuilder(NoMultilibBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.native_arch = 'aarch64'
         self.target = 'aarch64-linux-gnu'
 
@@ -124,6 +134,7 @@ class LoongArchBinutilsBuilder(StandardBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.native_arch = 'loongarch64'
         self.target = 'loongarch64-linux-gnu'
 
@@ -133,6 +144,7 @@ class MipsBinutilsBuilder(StandardBinutilsBuilder):
     def __init__(self, endian_suffix=''):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         target_64 = f"mips64{endian_suffix}"
         self.extra_targets = [f"{target_64}-linux-gnueabi64", f"{target_64}-linux-gnueabin32"]
 
@@ -152,6 +164,7 @@ class PowerPCBinutilsBuilder(StandardBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.native_arch = 'ppc'
         self.target = 'powerpc-linux-gnu'
 
@@ -161,6 +174,7 @@ class PowerPC64BinutilsBuilder(StandardBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.native_arch = 'ppc64'
         self.target = 'powerpc64-linux-gnu'
 
@@ -170,6 +184,7 @@ class PowerPC64LEBinutilsBuilder(StandardBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.native_arch = 'ppc64le'
         self.target = 'powerpc64le-linux-gnu'
 
@@ -179,6 +194,7 @@ class RISCV64BinutilsBuilder(StandardBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.native_arch = 'riscv64'
         self.target = 'riscv64-linux-gnu'
 
@@ -188,6 +204,7 @@ class S390XBinutilsBuilder(StandardBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.extra_targets.append('s390-linux-gnu')
         self.native_arch = 's390x'
         self.target = 's390x-linux-gnu'
@@ -198,6 +215,7 @@ class X8664BinutilsBuilder(StandardBinutilsBuilder):
     def __init__(self):
         super().__init__()
 
+        self.configure_flags.append('--enable-default-hash-style=gnu')
         self.extra_targets.append('x86_64-pep')
         self.native_arch = 'x86_64'
         self.target = 'x86_64-linux-gnu'
@@ -234,4 +252,4 @@ class BinutilsSourceManager(SourceManager):
             self.tarball.download()
 
         self.tarball.extract(self.location)
-        tc_build.utils.print_info(f"Source sucessfully prepared in {self.location}")
+        tc_build.utils.print_info(f"Source successfully prepared in {self.location}")
