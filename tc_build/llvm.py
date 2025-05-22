@@ -434,10 +434,15 @@ class LLVMSlimBuilder(LLVMBuilder):
         runtime_distribution_components = []
         if llvm_build_tools:
             distribution_components += [
+                'clang',
+                'clang-resource-headers',
+                'lld',
+                'bolt',
                 'llvm-ar',
                 'llvm-nm',
                 'llvm-objcopy',
                 'llvm-objdump',
+                'llvm-profdata',
                 'llvm-ranlib',
                 'llvm-readelf',
                 'llvm-strip',
@@ -518,6 +523,21 @@ class LLVMInstrumentedBuilder(LLVMBuilder):
     def __init__(self):
         super().__init__()
 
+        self.release_build = False
+
+        # --- MODIFICACIÓN PROPUESTA ---
+        # Aseguramos que los componentes de distribución incluyan clang
+        self.cmake_defines['LLVM_DISTRIBUTION_COMPONENTS'] = 'clang;clang-format;llvm-ar;llvm-nm;llvm-objcopy;llvm-objdump;llvm-ranlib;llvm-readelf;llvm-readobj;llvm-strip'
+
+        # Forzamos LLVM_INSTALL_TOOLCHAIN_ONLY a OFF para que no restrinja la instalación
+        self.cmake_defines['LLVM_INSTALL_TOOLCHAIN_ONLY'] = 'OFF'
+
+        # Aseguramos que los targets de instalación incluyan 'clang' y 'distribution'
+        # 'distribution' es el target que maneja LLVM_DISTRIBUTION_COMPONENTS
+        # Añadimos 'clang' explícitamente por si acaso.
+        self.install_targets = ['clang', 'clang-format', 'distribution'] # <-- Asegúrate de que esta línea exista y sea así
+        # --- FIN DE LA MODIFICACIÓN ---
+
         self.cmake_defines['LLVM_BUILD_INSTRUMENTED'] = 'IR'
         self.cmake_defines['LLVM_BUILD_RUNTIME'] = 'OFF'
         self.cmake_defines['LLVM_LINK_LLVM_DYLIB'] = 'ON'
@@ -578,7 +598,7 @@ class LLVMSourceManager:
         self.repo = repo
 
     def default_projects(self):
-        return ['clang', 'compiler-rt', 'lld', 'polly']
+        return ['clang', 'compiler-rt', 'lld', 'polly', 'clang-tools-extra']
 
     def default_targets(self):
         all_targets = get_all_targets(self.repo)
