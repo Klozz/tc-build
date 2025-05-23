@@ -598,7 +598,7 @@ class LLVMSourceManager:
         self.repo = repo
 
     def default_projects(self):
-        return ['clang', 'compiler-rt', 'lld', 'polly', 'clang-tools-extra']
+        return ['clang', 'compiler-rt', 'lld', 'polly']
 
     def default_targets(self):
         all_targets = get_all_targets(self.repo)
