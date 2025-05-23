@@ -125,19 +125,6 @@ parser.add_argument('--build-type',
                     '''),
                     type=str,
                     choices=['Release', 'Debug', 'RelWithDebInfo', 'MinSizeRel'])
-# yapf: enable
-parser.add_argument('--check-targets',
-                    help=textwrap.dedent('''\
-                    By default, no testing is run on the toolchain. If you would like to run unit/regression
-                    tests, use this parameter to specify a list of check targets to run with ninja. Common
-                    ones include check-llvm, check-clang, and check-lld.
-
-                    The values passed to this parameter will be automatically concatenated with 'check-'.
-
-                    Example: '--check-targets clang llvm' will make ninja invokve 'check-clang' and 'check-llvm'.
-
-                    '''),
-                    nargs='+')
 parser.add_argument('-D',
                     '--defines',
                     help=textwrap.dedent('''\
